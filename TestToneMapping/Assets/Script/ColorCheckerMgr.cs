@@ -5,6 +5,7 @@ using UnityEngine;
 
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
+using System;
 
 public enum CheckerMode
 {
@@ -38,6 +39,9 @@ public class ColorCheckerMgr : MonoBehaviour
     public CheckerMode mode = CheckerMode.Color24_6x4;
 
     public WBSolveMode solveMode = WBSolveMode.CCM3x3;
+    public MeshRenderer mr_targetWB;
+    [SerializeField]
+    public Texture2D tex_targetWB = null;
     // Start is called before the first frame update
     void Start()
     {
@@ -61,7 +65,15 @@ public class ColorCheckerMgr : MonoBehaviour
         //Gizmos.color = Color.green;
         Vector3 unit_checkerY = GetOffsetFromUV(uvDir_checkerYDir.normalized * step_checkYStep);
         //Gizmos.DrawWireCube(p0 + 1 * unit_checkerY, debug_cubeSize * Vector3.one);
+        if(GetComponent<MeshRenderer>()==null|| GetComponent<MeshRenderer>().sharedMaterial==null)
+        {
+            return;
+        }
         var tex = (Texture2D)GetComponent<MeshRenderer>().sharedMaterial.GetTexture("_MainTex");
+        if(tex==null)
+        {
+            return;
+        }
         tex.filterMode = FilterMode.Point;
         tex.wrapMode = TextureWrapMode.Clamp;
         if(tex!=null&&mode == CheckerMode.Color24_6x4)
@@ -87,13 +99,70 @@ public class ColorCheckerMgr : MonoBehaviour
     {
         if(solveMode == WBSolveMode.CCM3x3)
         {
-            
+            var tex = (Texture2D)GetComponent<MeshRenderer>().sharedMaterial.GetTexture("_MainTex");
+            tex.filterMode = FilterMode.Point;
+            tex.wrapMode = TextureWrapMode.Clamp;
+            if (tex != null && mode == CheckerMode.Color24_6x4)
+            {
+                double[,] A_array = new double[24, 3];
+                for (int j = 0; j < 4; j++)
+                {
+                    for (int i = 0; i < 6; i++)
+                    {
+                        var c = GetColorFromUV(tex, uv_checkerStart + uvDir_checkerXDir.normalized * step_checkXStep * i + uvDir_checkerYDir.normalized * step_checkYStep * j);
+                        int id = i + j * 6;
+                        A_array[id,0] = c.r;
+                        A_array[id,1] = c.g;
+                        A_array[id,2] = c.b;
+                    }
+                }
+                Matrix<double> mat_A = DenseMatrix.OfArray(A_array);
+                Matrix<double> mat_B = DenseMatrix.OfArray(MakeArrayOfTrueColor24x3());
+                //--debug
+                for (int i = 0; i < 24; i++)
+                {
+                    var c0 = new Color((float)mat_A[i, 0], (float)mat_A[i, 1], (float)mat_A[i, 2]);
+                    var c1 = new Color((float)mat_B[i, 0], (float)mat_B[i, 1], (float)mat_B[i, 2]);
+                    Debug.Log("c"+i+"_input: " + c0);
+                    Debug.Log("c"+i+"_true: " + c1);
+                }
+                //mat_B = mat_A;
+                //mat_A = DenseMatrix.OfArray(new double[1, 3] { { c0.r, c0.g, c0.b } });
+                //mat_B = DenseMatrix.OfArray(new double[1, 3] { { c1.r, c1.g, c1.b } });
+                //___
+                //(AT*A)^(-1)*AT*B
+                var mat_AT = mat_A.Transpose();
+                Matrix<double> mat_X = (mat_AT*mat_A).Inverse()* mat_AT* mat_B;
+                Debug.Log(mat_X);
+                CCMNormalizeMatX(ref mat_X);
+                if(tex_targetWB==null)
+                {
+                    tex_targetWB = new Texture2D(tex.width, tex.height, TextureFormat.RGBAFloat,false,true);
+                    tex_targetWB.filterMode = FilterMode.Point;
+                    tex_targetWB.wrapMode = TextureWrapMode.Clamp;
+                }
+                DoWB(tex, ref tex_targetWB, mat_X);
+                mr_targetWB.sharedMaterial.SetTexture("_MainTex", tex_targetWB);
+            }
+            else
+            {
+                Debug.LogError("NOT tex != null && mode == CheckerMode.Color24_6x4");
+            }
         }
         else
         {
             Debug.LogError("Unhandle");
             return;
         }
+    }
+
+    public void ClearCalculation()
+    {
+        //DestroyImmediate(mat_targetWB);
+        //mat_targetWB = null;
+        DestroyImmediate(tex_targetWB);
+        tex_targetWB = null;
+        mr_targetWB.sharedMaterial.SetTexture("_MainTex", null);
     }
 
     public void TestMathNet()
@@ -103,10 +172,14 @@ public class ColorCheckerMgr : MonoBehaviour
         {0,1,0,1},
         {0,0,1,1},
         { 0,0,0,1} });
-
+        
         Vector<double> vec = Vector<double>.Build.DenseOfArray(new double[] { 1, 2, 3, 1 });
         var re = mat1 * vec;
-        Debug.Log(re);
+        Debug.Log(re+" "+re[0]+" " + re[1]);
+        //var mat1_rev = mat1.Inverse();
+
+        //Matrix<double> mat_B = DenseMatrix.OfArray(MakeArrayOfTrueColor24x3());
+        //Debug.Log(mat_B);
     }
     //#####################################################################
     Vector3 GetPosFromUV(Vector2 uv)
@@ -173,6 +246,55 @@ public class ColorCheckerMgr : MonoBehaviour
         {
             Debug.LogError("Unhandle");
             return Color.black;
+        }
+    }
+
+    double[,] MakeArrayOfTrueColor24x3()
+    {
+        double[,] re = new double[24,3];
+        for(int i=0;i<24;i++)
+        {
+            re[i, 0] = trueColor24_6x4[i].r / 255.0;
+            re[i, 1] = trueColor24_6x4[i].g / 255.0;
+            re[i, 2] = trueColor24_6x4[i].b / 255.0;
+        }
+        return re;
+    }
+
+    void DoWB(Texture2D tex, ref Texture2D tex_targetWB, in Matrix<double> mat_X)
+    {
+        var colors = tex.GetPixels();
+        var re = new Color[colors.Length];
+        for(int i=0;i<colors.Length;i++)
+        {
+            double[] vecArr = new double[3];
+            vecArr[0] = colors[i].r;
+            vecArr[1] = colors[i].g;
+            vecArr[2] = colors[i].b;
+            Vector<double> vec = Vector<double>.Build.DenseOfArray(vecArr);
+            var r = mat_X * vec;
+            r[0] = Math.Pow(r[0], 2.2);
+            r[1] = Math.Pow(r[1], 2.2);
+            r[2] = Math.Pow(r[2], 2.2);
+            re[i] = new Color((float)r[0], (float)r[1], (float)r[2]);
+        }
+        //Debug.Log(colors[0]);
+        //Debug.Log(re[0]);
+        tex_targetWB.SetPixels(re);
+        tex_targetWB.Apply();
+    }
+
+    void CCMNormalizeMatX(ref Matrix<double> mat_X)
+    {
+        for(int i=0;i<3;i++)
+        {
+            double a = mat_X[i, 0];
+            double b = mat_X[i, 1];
+            double c = mat_X[i, 2];
+            double r = (a + b + c);
+            mat_X[i, 0] /= r;
+            mat_X[i, 1] /= r;
+            mat_X[i, 2] /= r;
         }
     }
 }

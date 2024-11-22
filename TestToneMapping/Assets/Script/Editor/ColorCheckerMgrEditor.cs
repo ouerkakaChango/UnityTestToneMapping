@@ -37,6 +37,10 @@ public class ColorCheckerMgrEditor : Editor
         {
             Target.TestMathNet();
         }
+        if (GUILayout.Button("ClearCalculation"))
+        {
+            Target.ClearCalculation();
+        }
 
         serializedObject.ApplyModifiedProperties();
     }
