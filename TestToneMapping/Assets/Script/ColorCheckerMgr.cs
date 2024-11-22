@@ -2,7 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UIElements;
+
+using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.LinearAlgebra.Double;
 
 public enum CheckerMode
 {
@@ -19,6 +21,12 @@ public struct XColor24
         b = b_;
     }
 }
+
+public enum WBSolveMode
+{
+    CCM3x3,
+}
+
 public class ColorCheckerMgr : MonoBehaviour
 {
     public Vector2 uv_checkerStart=new Vector2(0,0);
@@ -28,6 +36,8 @@ public class ColorCheckerMgr : MonoBehaviour
     public float step_checkYStep = 0.1f;
     public float debug_cubeSize = 0.1f;
     public CheckerMode mode = CheckerMode.Color24_6x4;
+
+    public WBSolveMode solveMode = WBSolveMode.CCM3x3;
     // Start is called before the first frame update
     void Start()
     {
@@ -72,7 +82,33 @@ public class ColorCheckerMgr : MonoBehaviour
             }
         }
     }
+    //######################################################################3
+    public void GenerateTextureWB()
+    {
+        if(solveMode == WBSolveMode.CCM3x3)
+        {
+            
+        }
+        else
+        {
+            Debug.LogError("Unhandle");
+            return;
+        }
+    }
 
+    public void TestMathNet()
+    {
+        Matrix<double> mat1 = DenseMatrix.OfArray(new double[,] {
+        {1,0,0,1},
+        {0,1,0,1},
+        {0,0,1,1},
+        { 0,0,0,1} });
+
+        Vector<double> vec = Vector<double>.Build.DenseOfArray(new double[] { 1, 2, 3, 1 });
+        var re = mat1 * vec;
+        Debug.Log(re);
+    }
+    //#####################################################################
     Vector3 GetPosFromUV(Vector2 uv)
     {
         Vector3 uDir = transform.right;
