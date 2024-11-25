@@ -189,10 +189,11 @@ MonoBehaviour:
   step_checkYStep: 0.095
   debug_cubeSize: 0.04
   mode: 0
-  solveMode: 0
+  solveMode: 2
   mr_targetWB: {fileID: 849892991}
   output_config3x3: {fileID: 0}
-  input_config3x3: {fileID: 11400000, guid: b65229bc55ab7a0459d5815648eb7360, type: 2}
+  input_config3x3: {fileID: 11400000, guid: 20c5c43c67522f94eb2bf21ff051dda9, type: 2}
+  referenceMode: 1
 --- !u!64 &56517946
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -437,6 +438,7 @@ MonoBehaviour:
   mr_targetWB: {fileID: 0}
   output_config3x3: {fileID: 0}
   input_config3x3: {fileID: 0}
+  referenceMode: 0
 --- !u!64 &849892990
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -671,6 +673,7 @@ MonoBehaviour:
   mr_targetWB: {fileID: 0}
   output_config3x3: {fileID: 0}
   input_config3x3: {fileID: 0}
+  referenceMode: 0
 --- !u!64 &1385277063
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -797,7 +800,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af748b32d27fdf4419e972080bb2b73c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  color: {r: 0.439, g: 0.694, b: 0.859, a: 0}
+  color: {r: 0.93725497, g: 0.82745105, b: 0.039215688, a: 0}
 --- !u!114 &1604914690
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -819,8 +822,9 @@ MonoBehaviour:
   mode: 0
   solveMode: 0
   mr_targetWB: {fileID: 1915147418}
-  output_config3x3: {fileID: 11400000, guid: b65229bc55ab7a0459d5815648eb7360, type: 2}
+  output_config3x3: {fileID: 11400000, guid: 20c5c43c67522f94eb2bf21ff051dda9, type: 2}
   input_config3x3: {fileID: 0}
+  referenceMode: 1
 --- !u!64 &1604914691
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -1065,10 +1069,11 @@ MonoBehaviour:
   step_checkYStep: 0.08
   debug_cubeSize: 0.04
   mode: 0
-  solveMode: 0
+  solveMode: 2
   mr_targetWB: {fileID: 1385277064}
   output_config3x3: {fileID: 0}
-  input_config3x3: {fileID: 11400000, guid: b65229bc55ab7a0459d5815648eb7360, type: 2}
+  input_config3x3: {fileID: 11400000, guid: 20c5c43c67522f94eb2bf21ff051dda9, type: 2}
+  referenceMode: 1
 --- !u!64 &1846571824
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -1298,3 +1303,4 @@ MonoBehaviour:
   mr_targetWB: {fileID: 0}
   output_config3x3: {fileID: 0}
   input_config3x3: {fileID: 0}
+  referenceMode: 0

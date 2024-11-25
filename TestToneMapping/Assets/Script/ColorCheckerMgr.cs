@@ -5,7 +5,8 @@ using UnityEngine;
 
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
-using System;
+//using System;
+using Math = System.Math;
 
 public enum CheckerMode
 {
@@ -30,6 +31,12 @@ public enum WBSolveMode
     Config3x3,
 }
 
+public enum ReferenceColorMode
+{
+    defaultCheckerTrueColor,
+    fromCustomColor,
+}
+
 public class ColorCheckerMgr : MonoBehaviour
 {
     public Vector2 uv_checkerStart=new Vector2(0,0);
@@ -48,6 +55,8 @@ public class ColorCheckerMgr : MonoBehaviour
     public CCM3x3Config output_config3x3;
 
     public CCM3x3Config input_config3x3;
+
+    public ReferenceColorMode referenceMode = ReferenceColorMode.defaultCheckerTrueColor;
     // Start is called before the first frame update
     void Start()
     {
@@ -123,7 +132,40 @@ public class ColorCheckerMgr : MonoBehaviour
                     }
                 }
                 Matrix<double> mat_A = DenseMatrix.OfArray(A_array);
-                Matrix<double> mat_B = DenseMatrix.OfArray(MakeArrayOfTrueColor24x3());
+                double[,] B_array = null;
+                if(referenceMode == ReferenceColorMode.defaultCheckerTrueColor)
+                {
+                    B_array = MakeArrayOfTrueColor24x3();
+                }
+                else if(referenceMode == ReferenceColorMode.fromCustomColor)
+                {
+                    B_array = new double[24, 3];
+                    for (int j = 0; j < 4; j++)
+                    {
+                        for (int i = 0; i < 6; i++)
+                        {
+                            int id = i + j * 6;
+                            List<Color> refColors = new List<Color>();
+                            refColors.Add(new Color(1, 0, 0) + 0.0f * new Color(Random.Range(0, 0.0f), Random.Range(0, 0.5f), Random.Range(0, 0.3f)));
+                            refColors.Add(new Color(0, 1, 0) + 0.0f * new Color(Random.Range(0, 0.0f), Random.Range(0, 0.5f), Random.Range(0, 0.3f)));
+                            refColors.Add(new Color(0, 0, 1) + 0.0f * new Color(Random.Range(0, 0.0f), Random.Range(0, 0.5f), Random.Range(0, 0.3f)));
+                            refColors.Add(1.0f * new Color(Random.Range(0, 1.0f), Random.Range(0, 1.0f), Random.Range(0, 1.0f)));
+                            refColors.Add(1.0f * new Color(Random.Range(0, 1.0f), Random.Range(0, 1.0f), Random.Range(0, 1.0f)));
+                            refColors.Add(1.0f * new Color(Random.Range(0, 1.0f), Random.Range(0, 1.0f), Random.Range(0, 1.0f)));
+                            int inx = Random.Range(0, refColors.Count);
+                            Color cref = refColors[inx];
+                            B_array[id, 0] = Math.Pow(cref.r, 1.0f);
+                            B_array[id, 1] = Math.Pow(cref.g, 1.0f);
+                            B_array[id, 2] = Math.Pow(cref.b, 1.0f);
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.LogError("unhandle");
+                    return;
+                }
+                Matrix<double> mat_B = DenseMatrix.OfArray(B_array);
                 //--debug
                 //for (int i = 0; i < 24; i++)
                 //{
@@ -139,7 +181,20 @@ public class ColorCheckerMgr : MonoBehaviour
                 //(AT*A)^(-1)*AT*B
                 var mat_AT = mat_A.Transpose();
                 Matrix<double> mat_X = (mat_AT*mat_A).Inverse()* mat_AT* mat_B;
-                CCMNormalizeMatX3x3(ref mat_X);
+                Debug.Log(mat_X);
+                if (referenceMode == ReferenceColorMode.defaultCheckerTrueColor)
+                {
+                    CCMNormalizeMatX3x3(ref mat_X);
+                }
+                else if(referenceMode == ReferenceColorMode.fromCustomColor)
+                {
+                    CCMNormalizeMatX3x3(ref mat_X);
+                }
+                else
+                {
+                    Debug.LogError("unhandle");
+                    return;
+                }
                 Debug.Log(mat_X);
                 savedMatxArr = mat_X.ToRowMajorArray();
                 LogArr("Saved internal: ",savedMatxArr);
