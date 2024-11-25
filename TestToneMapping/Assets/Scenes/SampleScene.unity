@@ -191,7 +191,8 @@ MonoBehaviour:
   mode: 0
   solveMode: 0
   mr_targetWB: {fileID: 849892991}
-  tex_targetWB: {fileID: 61127408}
+  output_config3x3: {fileID: 0}
+  input_config3x3: {fileID: 11400000, guid: b65229bc55ab7a0459d5815648eb7360, type: 2}
 --- !u!64 &56517946
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -271,7 +272,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!28 &61127408
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -435,7 +435,8 @@ MonoBehaviour:
   mode: 0
   solveMode: 0
   mr_targetWB: {fileID: 0}
-  tex_targetWB: {fileID: 0}
+  output_config3x3: {fileID: 0}
+  input_config3x3: {fileID: 0}
 --- !u!64 &849892990
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -668,7 +669,8 @@ MonoBehaviour:
   mode: 0
   solveMode: 0
   mr_targetWB: {fileID: 0}
-  tex_targetWB: {fileID: 0}
+  output_config3x3: {fileID: 0}
+  input_config3x3: {fileID: 0}
 --- !u!64 &1385277063
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -817,7 +819,8 @@ MonoBehaviour:
   mode: 0
   solveMode: 0
   mr_targetWB: {fileID: 1915147418}
-  tex_targetWB: {fileID: 464638192}
+  output_config3x3: {fileID: 11400000, guid: b65229bc55ab7a0459d5815648eb7360, type: 2}
+  input_config3x3: {fileID: 0}
 --- !u!64 &1604914691
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -1064,7 +1067,8 @@ MonoBehaviour:
   mode: 0
   solveMode: 0
   mr_targetWB: {fileID: 1385277064}
-  tex_targetWB: {fileID: 1266299571}
+  output_config3x3: {fileID: 0}
+  input_config3x3: {fileID: 11400000, guid: b65229bc55ab7a0459d5815648eb7360, type: 2}
 --- !u!64 &1846571824
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -1292,4 +1296,5 @@ MonoBehaviour:
   mode: 0
   solveMode: 0
   mr_targetWB: {fileID: 0}
-  tex_targetWB: {fileID: 0}
+  output_config3x3: {fileID: 0}
+  input_config3x3: {fileID: 0}

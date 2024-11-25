@@ -27,6 +27,7 @@ public enum WBSolveMode
 {
     CCM3x3,
     CCM4x4,
+    Config3x3,
 }
 
 public class ColorCheckerMgr : MonoBehaviour
@@ -42,6 +43,11 @@ public class ColorCheckerMgr : MonoBehaviour
     public WBSolveMode solveMode = WBSolveMode.CCM3x3;
     public MeshRenderer mr_targetWB;
     Texture2D tex_targetWB = null;
+
+    double[] savedMatxArr;
+    public CCM3x3Config output_config3x3;
+
+    public CCM3x3Config input_config3x3;
     // Start is called before the first frame update
     void Start()
     {
@@ -133,9 +139,10 @@ public class ColorCheckerMgr : MonoBehaviour
                 //(AT*A)^(-1)*AT*B
                 var mat_AT = mat_A.Transpose();
                 Matrix<double> mat_X = (mat_AT*mat_A).Inverse()* mat_AT* mat_B;
-                Debug.Log(mat_X);
                 CCMNormalizeMatX3x3(ref mat_X);
                 Debug.Log(mat_X);
+                savedMatxArr = mat_X.ToRowMajorArray();
+                LogArr("Saved internal: ",savedMatxArr);
                 if (tex_targetWB==null)
                 {
                     tex_targetWB = new Texture2D(tex.width, tex.height, TextureFormat.RGBAFloat,false,true);
@@ -192,6 +199,29 @@ public class ColorCheckerMgr : MonoBehaviour
                 Debug.LogError("NOT tex != null && mode == CheckerMode.Color24_6x4");
             }
         }
+        else if(solveMode == WBSolveMode.Config3x3)
+        {
+            var tex = (Texture2D)GetComponent<MeshRenderer>().sharedMaterial.GetTexture("_MainTex");
+            tex.filterMode = FilterMode.Point;
+            tex.wrapMode = TextureWrapMode.Clamp;
+            if (tex != null && input_config3x3!=null)
+            {
+                Matrix<double> mat_X = input_config3x3.GetMatrix();
+                Debug.Log(mat_X);
+                if (tex_targetWB == null)
+                {
+                    tex_targetWB = new Texture2D(tex.width, tex.height, TextureFormat.RGBAFloat, false, true);
+                    tex_targetWB.filterMode = FilterMode.Point;
+                    tex_targetWB.wrapMode = TextureWrapMode.Clamp;
+                }
+                DoWB3x3(tex, ref tex_targetWB, mat_X);
+                mr_targetWB.sharedMaterial.SetTexture("_MainTex", tex_targetWB);
+            }
+            else
+            {
+                Debug.LogError("NOT tex != null && input_config3x3!=null");
+            }
+        }
         else
         {
             Debug.LogError("Unhandle");
@@ -206,6 +236,33 @@ public class ColorCheckerMgr : MonoBehaviour
         DestroyImmediate(tex_targetWB);
         tex_targetWB = null;
         mr_targetWB.sharedMaterial.SetTexture("_MainTex", null);
+    }
+
+    public void OutputConfig()
+    {
+        if(solveMode == WBSolveMode.CCM3x3)
+        {
+            if(savedMatxArr==null)
+            {
+                Debug.LogError("mat not saved");
+                return;
+            }
+            else if(savedMatxArr.Length!=9)
+            {
+                Debug.LogError("mat len not 9");
+                return;
+            }
+            else if(output_config3x3==null)
+            {
+                Debug.LogError("mat len not 9");
+                return;
+            }
+            output_config3x3.LoadFromRowMajorArr(savedMatxArr);
+        }
+        else
+        {
+            Debug.LogError("Unhandle");
+        }
     }
 
     public void TestMathNet()
@@ -390,6 +447,23 @@ public class ColorCheckerMgr : MonoBehaviour
             mat_X[i, 1] /= r;
             mat_X[i, 2] /= r;
             mat_X[i, 3] /= r;
+        }
+    }
+
+    static void LogArr(string prefix,double[] arr)
+    {
+        if(arr==null)
+        {
+            Debug.Log(prefix+"null arr");
+        }
+        else
+        {
+            string re = prefix+" length " + arr.Length + " :";
+            for(int i=0;i<arr.Length;i++)
+            {
+                re += " " + arr[i];
+            }
+            Debug.Log(re);
         }
     }
 }

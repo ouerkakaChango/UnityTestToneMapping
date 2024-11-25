@@ -41,6 +41,10 @@ public class ColorCheckerMgrEditor : Editor
         {
             Target.ClearCalculation();
         }
+        if(GUILayout.Button("OutputConfig"))
+        {
+            Target.OutputConfig();
+        }
 
         serializedObject.ApplyModifiedProperties();
     }
